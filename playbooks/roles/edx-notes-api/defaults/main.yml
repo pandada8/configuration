@@ -1,0 +1,80 @@
+---
+#
+# edX Configuration
+#
+# github:     https://github.com/edx/configuration
+# wiki:       https://github.com/edx/configuration/wiki
+# code style: https://github.com/edx/configuration/wiki/Ansible-Coding-Conventions
+# license:    https://github.com/edx/configuration/blob/master/LICENSE.TXT
+#
+##
+# Defaults for role edx-notes-api
+# 
+
+EDX_NOTES_API_DATABASES:
+  # rw user
+  default:
+    ENGINE: 'django.db.backends.mysql'
+    NAME: 'edx-notes-api'
+    USER: 'rosencrantz'
+    PASSWORD: 'secret'
+    HOST: 'localhost'
+    PORT: 3306
+
+#
+# This data structure will be written out to yaml configuration file
+# in /edx/etc
+#
+SERVICE_CONFIG:
+  # replace with your secret key
+  SECRET_KEY: 'i^,9%i=e=y/Nlpb=Mkx!j&,HD9d/17F][9P,FLdwM2+G6|]BEU'
+  # replace with your oauth id and secret
+  CLIENT_ID: "edx-notes-id"
+  CLIENT_SECRET: "edxnotes-secret"
+  ELASTICSEARCH_URL: "http://127.0.0.1:9200"
+  ELASTICSEARCH_INDEX: "edx-notes"
+  # Number of rows to return by default in result.
+  RESULTS_DEFAULT_SIZE: 25
+  # Max number of rows to return in result.
+  RESULTS_MAX_SIZE: 250
+  DATABASE_OPTIONS:
+    connect_timeout: 10
+  DATABASES: "{{ EDX_NOTES_API_DATABASES }}"
+
+#
+# vars are namespace with the module name.
+#
+edx_notes_api_role_name: "edx-notes-api"
+edx_notes_api_service_name: "edx-notes-api"
+edx_notes_api_source_repo: "https://{{ COMMON_GIT_MIRROR }}/edx/edx-notes-api.git"
+EDX_NOTES_API_VERSION: "master"
+
+edx_notes_api_user: "{{ edx_notes_api_role_name }}"
+edx_notes_api_app_dir: "{{ COMMON_APP_DIR }}/{{ edx_notes_api_service_name }}"
+edx_notes_api_home: "{{ COMMON_APP_DIR }}/{{ edx_notes_api_service_name }}"
+edx_notes_api_venv_base: "{{ edx_notes_api_home }}/venvs"
+edx_notes_api_venv_dir: "{{ edx_notes_api_venv_base }}/{{ edx_notes_api_service_name }}"
+edx_notes_api_venv_bin: "{{ edx_notes_api_venv_dir }}/bin"
+edx_notes_api_code_dir: "{{ edx_notes_api_app_dir }}/edx-notes-api"
+edx_notes_api_python_path: "{{ edx_notes_api_code_dir }}/edx-notes-api"
+edx_notes_api_conf_dir: "{{ edx_notes_api_home }}"
+edx_notes_api_log_dir: "{{ COMMON_LOG_DIR }}/{{ edx_notes_api_service_name }}"
+
+edx_notes_api_gunicorn_host: "127.0.0.1"
+edx_notes_api_gunicorn_port: "8120"
+edx_notes_api_gunicorn_timeout: "300"
+edx_notes_api_wsgi: "analytics_dashboard.wsgi:application"
+
+edx_notes_api_requirements_base: "{{ edx_notes_api_code_dir }}/requirements"
+edx_notes_api_requirements:
+  - base.txt
+  - optional.txt
+
+#
+# OS packages
+#
+
+edx_notes_api_debian_pkgs:
+  - 'libmysqlclient-dev'
+
+edx_notes_api_redhat_pkgs: []
