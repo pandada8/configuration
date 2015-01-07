@@ -11,14 +11,23 @@
 # Defaults for role edx-notes-api
 # 
 
+EDX_NOTES_API_GUNICORN_WORKERS_EXTRA: ""
+EDX_NOTES_API_WORKERS_EXTRA_CONF: ""
+EDX_NOTES_API_LANG: "en-us"
+EDX_NOTES_API_WORKERS: !!null
+EDX_NOTES_API_MYSQL_USER: "rosencrantz"
+EDX_NOTES_API_MYSQL_DB_NAME: "edx-notes-api"
+EDX_NOTES_API_MYSQL_PASSWORD: "secret"
+EDX_NOTES_API_MYSQL_HOST: "localhost"
+  
 EDX_NOTES_API_DATABASES:
   # rw user
   default:
-    ENGINE: 'django.db.backends.mysql'
-    NAME: 'edx-notes-api'
-    USER: 'rosencrantz'
-    PASSWORD: 'secret'
-    HOST: 'localhost'
+    ENGINE: "django.db.backends.mysql"
+    NAME: "{{ EDX_NOTES_API_MYSQL_DB_NAME }}"
+    USER: "{{ EDX_NOTES_API_MYSQL_USER }}"
+    PASSWORD: "{{ EDX_NOTES_API_MYSQL_PASSWORD }}"
+    HOST: "{{ EDX_NOTES_API_MYSQL_HOST }}"
     PORT: 3306
 
 #
@@ -26,6 +35,9 @@ EDX_NOTES_API_DATABASES:
 # in /edx/etc
 #
 SERVICE_CONFIG:
+  ALLOWED_HOSTS:
+    - "localhost"
+    - "*.edx.org"
   # replace with your secret key
   SECRET_KEY: 'i^,9%i=e=y/Nlpb=Mkx!j&,HD9d/17F][9P,FLdwM2+G6|]BEU'
   # replace with your oauth id and secret
@@ -47,7 +59,7 @@ SERVICE_CONFIG:
 edx_notes_api_role_name: "edx-notes-api"
 edx_notes_api_service_name: "edx-notes-api"
 edx_notes_api_source_repo: "https://{{ COMMON_GIT_MIRROR }}/edx/edx-notes-api.git"
-EDX_NOTES_API_VERSION: "master"
+EDX_NOTES_API_VERSION: "e0d/fix-configurator"
 
 edx_notes_api_user: "{{ edx_notes_api_role_name }}"
 edx_notes_api_app_dir: "{{ COMMON_APP_DIR }}/{{ edx_notes_api_service_name }}"
@@ -63,7 +75,9 @@ edx_notes_api_log_dir: "{{ COMMON_LOG_DIR }}/{{ edx_notes_api_service_name }}"
 edx_notes_api_gunicorn_host: "127.0.0.1"
 edx_notes_api_gunicorn_port: "8120"
 edx_notes_api_gunicorn_timeout: "300"
-edx_notes_api_wsgi: "analytics_dashboard.wsgi:application"
+edx_notes_api_wsgi: "notesserver.wsgi:application"
+
+edx_notes_api_manage: "{{ edx_notes_api_code_dir }}/manage.py" 
 
 edx_notes_api_requirements_base: "{{ edx_notes_api_code_dir }}/requirements"
 edx_notes_api_requirements:

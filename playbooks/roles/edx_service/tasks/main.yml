@@ -70,8 +70,8 @@
 
 - name: write out app config file
   template: >
-    src=config.yaml.j2
-    dest={{ COMMON_CFG_DIR  }}/{{ edx_service_name }}.yaml
+    src=config.yml.j2
+    dest={{ COMMON_CFG_DIR  }}/{{ edx_service_name }}.yml
     mode=0644
     
 # Replace dashes with underscores to support roles that use

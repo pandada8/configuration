@@ -34,9 +34,8 @@
     dest={{ edx_notes_api_code_dir }} repo={{ edx_notes_api_source_repo }} version={{ EDX_NOTES_API_VERSION }}
     accept_hostkey=yes key_file="{{ edx_notes_api_home }}/.ssh/id_rsa"
   register: edx_notes_api_code_checkout
-  #sudo_user: "{{ edx_notes_api_role_name }}"
-  sudo_user: "edx-notes-api"
-
+  sudo_user: "{{ edx_notes_api_role_name }}"
+  
 - name: install application requirements
   pip: >
     requirements="{{ edx_notes_api_requirements_base }}/{{ item }}"
@@ -45,58 +44,74 @@
   sudo_user: "{{ edx_notes_api_user }}"
   with_items: edx_notes_api_requirements
 
-# - name: migrate
-#   shell: >
-#     chdir={{ insights_code_dir }}
-#     DB_MIGRATION_USER={{ COMMON_MYSQL_MIGRATE_USER }}
-#     DB_MIGRATION_PASS={{ COMMON_MYSQL_MIGRATE_PASS }}
-#     {{ insights_venv_bin }}/python {{ insights_manage }} migrate --noinput
-#   sudo_user: "{{ insights_user }}"
-#   environment: "{{ insights_environment }}"
-#   when: migrate_db is defined and migrate_db|lower == "yes"
+##################### Remove after testing ####################
+#    #priv='{{ EDX_NOTES_API_MYSQL_DB_NAME }}.*:SELECT,INSERT,UPDATE,DELETE'
+- name: setup the edx-notes-api db user
+  mysql_user: >
+    name={{ EDX_NOTES_API_MYSQL_USER }}
+    password={{ EDX_NOTES_API_MYSQL_PASSWORD }}
+    priv='{{ EDX_NOTES_API_MYSQL_DB_NAME }}.*:ALL'
+  when: EDX_NOTES_API_MYSQL_USER is defined
 
-# - name: write out the supervisior wrapper
-#   template: >
-#     src=edx/app/insights/insights.sh.j2
-#     dest={{ insights_app_dir }}/{{ insights_service_name }}.sh
-#     mode=0650 owner={{ supervisor_user }} group={{ common_web_user }}
-#   notify: restart insights
+- name: create a database for edx-notes-api
+  mysql_db: >
+    db=edx-notes-api
+    state=present
+    encoding=utf8
+  when: EDX_NOTES_API_MYSQL_USER is defined
 
-# - name: write supervisord config
-#   template: >
-#     src=edx/app/supervisor/conf.d.available/insights.conf.j2
-#     dest="{{ supervisor_available_dir }}/{{ insights_service_name }}.conf"
-#     owner={{ supervisor_user }} group={{ common_web_user }} mode=0644
-#   notify: restart insights
+##################### Remove after testing #####################
+  
+- name: migrate
+  shell: >
+    chdir={{ edx_notes_api_code_dir }}
+    DB_MIGRATION_USER={{ COMMON_MYSQL_MIGRATE_USER }}
+    DB_MIGRATION_PASS={{ COMMON_MYSQL_MIGRATE_PASS }}
+    {{ edx_notes_api_venv_bin }}/python {{ edx_notes_api_manage }} migrate --noinput --settings="notesserver.settings.yaml_config"
+  sudo_user: "{{ edx_notes_api_user }}"
+  environment:
+    EDXNOTES_CONFIG_ROOT: "{{ COMMON_CFG_DIR }}"
+  #when: migrate_db is defined and migrate_db|lower == "yes"
 
-# - name: enable supervisor script
-#   file: >
-#     src={{ supervisor_available_dir }}/{{ insights_service_name }}.conf
-#     dest={{ supervisor_cfg_dir }}/{{ insights_service_name }}.conf
-#     state=link
-#     force=yes
-#   notify: restart insights
-#   when: not disable_edx_services
+- name: write out gunicorn.py
+  template: >
+    src=edx/app/edx-notes-api/{{ edx_notes_api_service_name }}-gunicorn.py.j2
+    dest={{ edx_notes_api_app_dir }}/{{ edx_notes_api_service_name }}-gunicorn.py
+    mode=0650 owner={{ supervisor_user }} group={{ common_web_user }}
 
-# - name: update supervisor configuration
-#   shell: "{{ supervisor_ctl }} -c {{ supervisor_cfg }} update"
-#   when: not disable_edx_services
+- name: write supervisord config
+  template: >
+    src=edx/app/supervisor/conf.d.available/edx_notes_api.conf.j2
+    dest="{{ supervisor_available_dir }}/{{ edx_notes_api_service_name }}.conf"
+    owner={{ supervisor_user }} group={{ common_web_user }} mode=0644
 
-# - name: create symlinks from the venv bin dir
-#   file: >
-#     src="{{ insights_venv_bin }}/{{ item }}"
-#     dest="{{ COMMON_BIN_DIR }}/{{ item.split('.')[0] }}.{{ insights_role_name }}"
-#     state=link
-#   with_items:
-#   - python
-#   - pip
-#   - django-admin.py
+- name: enable supervisor script
+  file: >
+    src={{ supervisor_available_dir }}/{{ edx_notes_api_service_name }}.conf
+    dest={{ supervisor_cfg_dir }}/{{ edx_notes_api_service_name }}.conf
+    state=link
+    force=yes
+  when: not disable_edx_services
 
-# - name: create manage.py symlink
-#   file: >
-#     src="{{ insights_manage }}"
-#     dest="{{ COMMON_BIN_DIR }}/manage.{{ insights_role_name }}"
-#     state=link
+- name: update supervisor configuration
+  shell: "{{ supervisor_ctl }} -c {{ supervisor_cfg }} update"
+  when: not disable_edx_services
+
+- name: create symlinks from the venv bin dir
+  file: >
+    src="{{ edx_notes_api_venv_bin }}/{{ item }}"
+    dest="{{ COMMON_BIN_DIR }}/{{ item.split('.')[0] }}.{{ edx_notes_api_role_name }}"
+    state=link
+  with_items:
+  - python
+  - pip
+  - django-admin.py
+
+- name: create manage.py symlink
+  file: >
+    src="{{ edx_notes_api_manage }}"
+    dest="{{ COMMON_BIN_DIR }}/manage.{{ edx_notes_api_role_name }}"
+    state=link
 
 # - include: tag_ec2.yml tags=deploy
 #   when: COMMON_TAG_EC2_INSTANCE

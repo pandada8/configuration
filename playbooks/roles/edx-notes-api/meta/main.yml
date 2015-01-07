@@ -23,4 +23,4 @@ dependencies:
   - role: edx_service
     edx_role_name: "{{ edx_notes_api_role_name }}"
     edx_service_name: "{{ edx_notes_api_service_name }}"
-  #- supervisor
+  - supervisor
