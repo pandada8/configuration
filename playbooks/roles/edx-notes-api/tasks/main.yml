@@ -43,24 +43,6 @@
     extra_args="--exists-action w"
   sudo_user: "{{ edx_notes_api_user }}"
   with_items: edx_notes_api_requirements
-
-##################### Remove after testing ####################
-#    #priv='{{ EDX_NOTES_API_MYSQL_DB_NAME }}.*:SELECT,INSERT,UPDATE,DELETE'
-- name: setup the edx-notes-api db user
-  mysql_user: >
-    name={{ EDX_NOTES_API_MYSQL_USER }}
-    password={{ EDX_NOTES_API_MYSQL_PASSWORD }}
-    priv='{{ EDX_NOTES_API_MYSQL_DB_NAME }}.*:ALL'
-  when: EDX_NOTES_API_MYSQL_USER is defined
-
-- name: create a database for edx-notes-api
-  mysql_db: >
-    db=edx-notes-api
-    state=present
-    encoding=utf8
-  when: EDX_NOTES_API_MYSQL_USER is defined
-
-##################### Remove after testing #####################
   
 - name: migrate
   shell: >

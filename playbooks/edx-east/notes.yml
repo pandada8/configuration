@@ -7,10 +7,10 @@
     ENABLE_SPLUNKFORWARDER: False
     ENABLE_NEWRELIC: True
   roles:
-    #- role: nginx
-    #  nginx_sites:
-    #    - insights
-    - edx-shared-vars
+    - role: nginx
+      nginx_sites:
+        - edx-notes-api
+    - aws
     - edx-notes-api 
     - role: datadog
       when: COMMON_ENABLE_DATADOG

@@ -15,18 +15,21 @@ EDX_NOTES_API_GUNICORN_WORKERS_EXTRA: ""
 EDX_NOTES_API_WORKERS_EXTRA_CONF: ""
 EDX_NOTES_API_LANG: "en-us"
 EDX_NOTES_API_WORKERS: !!null
-EDX_NOTES_API_MYSQL_USER: "rosencrantz"
+EDX_NOTES_API_MYSQL_DB_USER: "rosencrantz"
 EDX_NOTES_API_MYSQL_DB_NAME: "edx-notes-api"
-EDX_NOTES_API_MYSQL_PASSWORD: "secret"
+EDX_NOTES_API_MYSQL_DB_PASSWORD: "secret"
 EDX_NOTES_API_MYSQL_HOST: "localhost"
-  
+EDX_NOTES_API_NEWRELIC_APPNAME: "{{ COMMON_ENVIRONMENT }}-{{ COMMON_DEPLOYMENT }}-notes"
+# Change this value
+EDX_NOTES_API_SECRET_KEY: "i^,9%i=e=y/Nlpb=Mkx!j&,HD9d/17F][9P,FLdwM2+G6|]BEU"
+
 EDX_NOTES_API_DATABASES:
   # rw user
   default:
     ENGINE: "django.db.backends.mysql"
     NAME: "{{ EDX_NOTES_API_MYSQL_DB_NAME }}"
-    USER: "{{ EDX_NOTES_API_MYSQL_USER }}"
-    PASSWORD: "{{ EDX_NOTES_API_MYSQL_PASSWORD }}"
+    USER: "{{ EDX_NOTES_API_MYSQL_DB_USER }}"
+    PASSWORD: "{{ EDX_NOTES_API_MYSQL_DB_PASSWORD }}"
     HOST: "{{ EDX_NOTES_API_MYSQL_HOST }}"
     PORT: 3306
 
@@ -39,7 +42,7 @@ SERVICE_CONFIG:
     - "localhost"
     - "*.edx.org"
   # replace with your secret key
-  SECRET_KEY: 'i^,9%i=e=y/Nlpb=Mkx!j&,HD9d/17F][9P,FLdwM2+G6|]BEU'
+  SECRET_KEY: '{{ EDX_NOTES_API_SECRET_KEY }}'
   # replace with your oauth id and secret
   CLIENT_ID: "edx-notes-id"
   CLIENT_SECRET: "edxnotes-secret"
@@ -58,8 +61,11 @@ SERVICE_CONFIG:
 #
 edx_notes_api_role_name: "edx-notes-api"
 edx_notes_api_service_name: "edx-notes-api"
+# underscore name
+edx_notes_api_role_name_safe: "edx_notes_api"
+
 edx_notes_api_source_repo: "https://{{ COMMON_GIT_MIRROR }}/edx/edx-notes-api.git"
-EDX_NOTES_API_VERSION: "e0d/fix-configurator"
+EDX_NOTES_API_VERSION: "e0d/migration-overrides"
 
 edx_notes_api_user: "{{ edx_notes_api_role_name }}"
 edx_notes_api_app_dir: "{{ COMMON_APP_DIR }}/{{ edx_notes_api_service_name }}"
@@ -77,6 +83,8 @@ edx_notes_api_gunicorn_port: "8120"
 edx_notes_api_gunicorn_timeout: "300"
 edx_notes_api_wsgi: "notesserver.wsgi:application"
 
+EDX_NOTES_API_NGINX_PORT: "18120"
+
 edx_notes_api_manage: "{{ edx_notes_api_code_dir }}/manage.py" 
 
 edx_notes_api_requirements_base: "{{ edx_notes_api_code_dir }}/requirements"
@@ -87,8 +95,8 @@ edx_notes_api_requirements:
 #
 # OS packages
 #
-
 edx_notes_api_debian_pkgs:
   - 'libmysqlclient-dev'
+  - 'python-mysqldb'
 
 edx_notes_api_redhat_pkgs: []
