@@ -19,6 +19,7 @@ EDX_NOTES_API_MYSQL_DB_USER: "rosencrantz"
 EDX_NOTES_API_MYSQL_DB_NAME: "edx-notes-api"
 EDX_NOTES_API_MYSQL_DB_PASSWORD: "secret"
 EDX_NOTES_API_MYSQL_HOST: "localhost"
+EDX_NOTES_API_ELASTICSEARCH_URL: "http://127.0.0.1:9200"
 EDX_NOTES_API_NEWRELIC_APPNAME: "{{ COMMON_ENVIRONMENT }}-{{ COMMON_DEPLOYMENT }}-notes"
 # Change this value
 EDX_NOTES_API_SECRET_KEY: "i^,9%i=e=y/Nlpb=Mkx!j&,HD9d/17F][9P,FLdwM2+G6|]BEU"
@@ -32,21 +33,21 @@ EDX_NOTES_API_DATABASES:
     PASSWORD: "{{ EDX_NOTES_API_MYSQL_DB_PASSWORD }}"
     HOST: "{{ EDX_NOTES_API_MYSQL_HOST }}"
     PORT: 3306
-
+EDX_NOTES_API_ALLOWED_HOSTS:
+  - "localhost"
+    
 #
 # This data structure will be written out to yaml configuration file
 # in /edx/etc
 #
 SERVICE_CONFIG:
-  ALLOWED_HOSTS:
-    - "localhost"
-    - "*.edx.org"
+  ALLOWED_HOSTS: "{{ EDX_NOTES_API_ALLOWED_HOSTS }}"
   # replace with your secret key
   SECRET_KEY: '{{ EDX_NOTES_API_SECRET_KEY }}'
   # replace with your oauth id and secret
   CLIENT_ID: "edx-notes-id"
   CLIENT_SECRET: "edxnotes-secret"
-  ELASTICSEARCH_URL: "http://127.0.0.1:9200"
+  ELASTICSEARCH_URL: "{{ EDX_NOTES_API_ELASTICSEARCH_URL }}"
   ELASTICSEARCH_INDEX: "edx-notes"
   # Number of rows to return by default in result.
   RESULTS_DEFAULT_SIZE: 25
@@ -55,7 +56,12 @@ SERVICE_CONFIG:
   DATABASE_OPTIONS:
     connect_timeout: 10
   DATABASES: "{{ EDX_NOTES_API_DATABASES }}"
-
+  HAYSTACK_CONNECTIONS:
+    default:
+      ENGINE: 'notesserver.highlight.ElasticsearchSearchEngine'
+      URL: "{{ EDX_NOTES_API_ELASTICSEARCH_URL }}"
+      INDEX_NAME: 'edx-notes'
+  
 #
 # vars are namespace with the module name.
 #
