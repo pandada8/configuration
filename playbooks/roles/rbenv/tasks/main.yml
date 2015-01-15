@@ -101,6 +101,10 @@
   environment: "{{ rbenv_environment }}"
   ignore_errors: yes
 
+- name: install taobao source
+  git: repo=https://github.com/andorchen/rbenv-taobao-mirror.git dest={{ rbenv_root }}/plugins/rbenv-taobao-mirror
+  when: ruby_installed|failed
+
 - name: install ruby {{ rbenv_ruby_version }}
   shell: "rbenv install {{ rbenv_ruby_version }} creates={{ rbenv_dir }}/.rbenv/versions/{{ rbenv_ruby_version }}"
   when: ruby_installed|failed
